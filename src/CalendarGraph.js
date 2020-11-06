@@ -10,15 +10,12 @@ const width = 954;
 const height = 119
 const timeWeek = weekday === "sunday" ? d3.utcSunday : d3.utcMonday;
 const countDay = weekday === "sunday" ? i => i : i => (i + 6) % 7;
-const formatValue = d3.format("+.2%");
-const formatClose = d3.format("$,.2f");
-const formatDate = d3.utcFormat("%x");
-const formatDay = i => "SMTWTFS"[i];
 const formatMonth = d3.utcFormat("%b");
 
 const color = (() => {
-    const max = d3.quantile(data.map(d => Math.abs(d.value)).sort(d3.ascending), 0.9975);
-    return d3.scaleSequential(d3.interpolatePiYG).domain([-max, +max]);
+    // const max = d3.quantile(data.map(d => Math.abs(d.value)).sort(d3.ascending), 0.9975);
+    // return d3.scaleSequential(d3.interpolatePiYG).domain([-max, +max]);
+    return value => `#${value % 10}${value % 10}${value % 10}`;
 })();
 
 function pathMonth(t) {
@@ -36,59 +33,105 @@ export function CalendarGraph(props) {
         .attr("font-family", "sans-serif")
         .attr("font-size", 10);
 
-    const year = svg.selectAll("g")
-        .data(years)
+    const yearSvg = svg.selectAll("g")
+        .data(props.years)
         .join("g")
         .attr("transform", (d, i) => `translate(120,${height * i + cellSize * 1.5})`);
 
-    year.append("text")
+    yearSvg.append("text")
         .attr("x", -5)
         .attr("y", -5)
         .attr("font-weight", "bold")
         .attr("text-anchor", "end")
-        .text(([key]) => key);
+        .text(year => {
+            console.log(year);
+            return year.name;
+        });
 
-    year.append("g")
+    yearSvg.append("g")
         .attr("text-anchor", "end")
         .selectAll("text")
-        .data(d3.range(props.ou.length))
+        .data(props.selectedRegions)
         .join("text")
         .attr("x", -5)
-        .attr("y", i => (i + 0.5) * cellSize)
+        .attr("y", (_, index) => (index + 0.5) * cellSize)
         .attr("dy", "0.31em")
-        .text(key => props.ou[key]);
+        .text(key => key);
 
-    year.append("g")
+
+    yearSvg.append("g")
+        .selectAll("g")
+        .data(['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'])
+        .join("g")
+        .append("text")
+        .attr("x", (_, index) => index * cellSize + 20)
+        .attr("y", -5)
+        .text(month => month);
+
+    // const month = yearSvg.append("g")
+    //     .selectAll("g")
+    //     .data(year => year.months)
+    //     .join("g");
+
+    yearSvg.append("g")
         .selectAll("rect")
-        .data(weekday === "weekday"
-            ? ([, values]) => values.filter(d => ![0, 6].includes(d.date.getUTCDay()))
-            : ([, values]) => values)
+        // .data(month => Object.keys(month))
+        .data(year => year.values)
         .join("rect")
         .attr("width", cellSize - 1)
         .attr("height", cellSize - 1)
-        .attr("x", d => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 0.5)
-        .attr("y", d => countDay(d.date.getUTCDay()) * cellSize + 0.5)
-        .attr("fill", d => color(d.value))
+        .attr("x", (cell, i) => {
+            console.log('b', cell);
+            return cell.month * cellSize + 0.5;
+        })
+        .attr("y", (cell, i) => {
+            const regionIndex = props.selectedRegions.findIndex(selected => selected === cell.region);
+            return regionIndex * cellSize + 0.5;
+        })
+        .attr("fill", cell => color(cell.value))
         .append("title")
-        .text(d => `${formatDate(d.date)}
-+${formatValue(d.value)}${d.close === undefined ? "" : `
-+${formatClose(d.close)}`}`);
+        .text(region => `${props.indicator}: ${region}`);
 
-    const month = year.append("g")
-        .selectAll("g")
-        .data(([, values]) => d3.utcMonths(d3.utcMonth(values[0].date), values[values.length - 1].date))
-        .join("g");
+    //
+    // const month = yearSvg.append("g")
+    //     .selectAll("text")
+    //     .data(['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'])
+    //     .join("text")
+    //     .attr("x", (_, index) => index * cellSize + 20)
+    //     .attr("y", -5)
+    //     .text(month => month);
 
-    month.filter((d, i) => i).append("path")
-        .attr("fill", "none")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 3)
-        .attr("d", pathMonth);
 
-    month.append("text")
-        .attr("x", d => timeWeek.count(d3.utcYear(d), timeWeek.ceil(d)) * cellSize + 2)
-        .attr("y", -5)
-        .text(formatMonth);
+    // yearSvg.append("g")
+    //     .selectAll("rect")
+    //     .data(yearSvg => yearSvg.months)
+    //     .join("rect")
+    //     .attr("width", cellSize - 1)
+    //     .attr("height", cellSize - 1)
+    //     .attr("x", (d, i) => {
+    //         console.log(i);
+    //         return i * cellSize + 0.5;
+    //     })
+    //     .attr("y", d => countDay(d.date.getUTCDay()) * cellSize + 0.5)
+    //     .attr("fill", d => color(d.value))
+    //     .append("title")
+    //     .text(month => `${month[props.indicator]}`);
+    //
+    // const month = yearSvg.append("g")
+    //     .selectAll("g")
+    //     .data(([, values]) => d3.utcMonths(d3.utcMonth(values[0].date), values[values.length - 1].date))
+    //     .join("g");
+    //
+    // month.filter((d, i) => i).append("path")
+    //     .attr("fill", "none")
+    //     .attr("stroke", "#fff")
+    //     .attr("stroke-width", 3)
+    //     .attr("d", pathMonth);
+    //
+    // month.append("text")
+    //     .attr("x", d => timeWeek.count(d3.utcYear(d), timeWeek.ceil(d)) * cellSize + 2)
+    //     .attr("y", -5)
+    //     .text(formatMonth);
 
     const node = svg.node();
 
