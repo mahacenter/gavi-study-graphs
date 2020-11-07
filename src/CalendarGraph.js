@@ -36,7 +36,7 @@ export function CalendarGraph(props) {
     const yearSvg = svg.selectAll("g")
         .data(props.years)
         .join("g")
-        .attr("transform", (d, i) => `translate(120,${height * i + cellSize * 1.5})`);
+        .attr("transform", (d, i) => `translate(120,${(40 + (props.selectedRegions.length * cellSize)) * i + cellSize * 1.5})`);
 
     yearSvg.append("text")
         .attr("x", -5)
@@ -76,7 +76,10 @@ export function CalendarGraph(props) {
     yearSvg.append("g")
         .selectAll("rect")
         // .data(month => Object.keys(month))
-        .data(year => year.values)
+        .data(year => {
+            console.log('YEAR', year);
+            return year.values;
+        })
         .join("rect")
         .attr("width", cellSize - 1)
         .attr("height", cellSize - 1)
@@ -85,7 +88,7 @@ export function CalendarGraph(props) {
             return cell.month * cellSize + 0.5;
         })
         .attr("y", (cell, i) => {
-            const regionIndex = props.selectedRegions.findIndex(selected => selected === cell.region);
+            const regionIndex = props.selectedRegions.findIndex(selected => selected === cell.regionOrDistrict);
             return regionIndex * cellSize + 0.5;
         })
         .attr("fill", cell => color(cell.value))

@@ -5,7 +5,6 @@
 .App-logo {
   height: 50px;
   pointer-events: none;
-  margin: 0 10px;
 }
 
 .App-header {
@@ -15,6 +14,22 @@
   align-items: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.App-header--component {
+  margin: 0 30px;
+}
+
+.App-header--indicators {
+  width: 10vw;
+}
+
+.App-header--regions {
+  width: 15vw;
+}
+
+.App-header--districts {
+  min-width: 40vw;
 }
 
 .App-link {

@@ -6,6 +6,7 @@ import { writeFileSync } from "fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const workSheetsFromFile = xlsx.parse(`${__dirname}/data.xls`);
+const COLUMNS = {REGION: 0, DISTRICT: 1};
 const ignoredFirstColumns = 3;
 const ignoredFirstRows = 2;
 
@@ -28,11 +29,14 @@ function findIndicatorsRange(sheet) {
     return indicatorsRange;
 }
 
-function findDistrictsValues(sheet, indicatorsRange) {
+function findDistricsValuesForRange(sheet, indicatorsRange) {
     return _.reduce(sheet.data.slice(ignoredFirstRows), (result, districtCells, index) => {
-        result[districtCells[1]] = {
-            region: districtCells[0],
-            district: districtCells[1],
+        if (isGhanaOrUndefinedDistrict(districtCells)) {
+            return result;
+        }
+        result[districtCells[COLUMNS.DISTRICT]] = {
+            region: districtCells[COLUMNS.REGION],
+            district: districtCells[COLUMNS.DISTRICT],
             ..._.reduce(indicatorsRange, (indicatorsValue, range, indicator) => {
                 indicatorsValue[indicator] = _.sum(districtCells.slice(range.start, range.end));
                 return indicatorsValue;
@@ -42,10 +46,10 @@ function findDistrictsValues(sheet, indicatorsRange) {
     }, {});
 }
 
-function findDistricsValues() {
+function findMonthlyDistricsValues() {
     return workSheetsFromFile.map((sheet, index) => {
         const indicatorsRange = findIndicatorsRange(sheet);
-        const districtsValues = findDistrictsValues(sheet, indicatorsRange);
+        const districtsValues = findDistricsValuesForRange(sheet, indicatorsRange);
         return {
             districtsValues,
             year: `20${sheet.name.split('_')[1]}`,
@@ -54,17 +58,30 @@ function findDistricsValues() {
     });
 }
 
+function isGhanaOrUndefinedDistrict(row) {
+    return _.isEmpty(row[COLUMNS.DISTRICT]) || row[COLUMNS.DISTRICT].toLowerCase() === 'ghana';
+}
+
 function findRegionsAndDistricts() {
     const districtRows = _.head(workSheetsFromFile).data.slice(ignoredFirstRows);
     return districtRows.reduce((regionsAndDistricts, row) => {
-        if (!regionsAndDistricts[row[0]]) {
-            regionsAndDistricts[row[0]] = [row[1]];
-        } else {
-            regionsAndDistricts[row[0]].push(row[1]);
+        if (isGhanaOrUndefinedDistrict(row)) {
+            return regionsAndDistricts;
         }
+        if (!regionsAndDistricts[row[COLUMNS.REGION]]) {
+            regionsAndDistricts[row[COLUMNS.REGION]] = [];
+        }
+        regionsAndDistricts[row[COLUMNS.REGION]].push(row[COLUMNS.DISTRICT]);
         return regionsAndDistricts;
     }, {});
 }
 
-writeFileSync(`${__dirname}/src/data/districts.json`, JSON.stringify(findDistricsValues()));
+function findIndicators() {
+    const indicatorsRange = findIndicatorsRange(_.head(workSheetsFromFile));
+    return Object.keys(indicatorsRange);
+}
+
+
+writeFileSync(`${__dirname}/src/data/monthlyDistricsValues.json`, JSON.stringify(findMonthlyDistricsValues()));
 writeFileSync(`${__dirname}/src/data/regions.json`, JSON.stringify(findRegionsAndDistricts()));
+writeFileSync(`${__dirname}/src/data/indicators.json`, JSON.stringify(findIndicators()));
