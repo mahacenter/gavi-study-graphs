@@ -3,8 +3,8 @@ import {useState} from "react";
 import indicators from "./data/indicators.json";
 import regions from "./data/regions.json";
 import logo from './svg/Maha_blanc.svg';
-import {CalendarGraph} from "./CalendarGraph";
-import {indicatorYearsValues} from "./data/mappers";
+import {CalendarGraph} from "./graph/CalendarGraph";
+import {indicatorCoverageRateDiff, indicatorYearsValues} from "./data/mappers";
 import './App.css';
 const { Option } = Select;
 //
@@ -92,8 +92,8 @@ function App() {
         </header>
         <CalendarGraph
             indicator={selectedIndicator}
-            years={indicatorYearsValues(selectedIndicator, selectedDistricts)}
-            selectedRegions={selectedDistricts} />
+            years={indicatorCoverageRateDiff(selectedIndicator, selectedDistricts)}
+            selectedRegions={selectedDistricts.sort()} />
       </div>
   );
 }

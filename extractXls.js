@@ -6,7 +6,7 @@ import { writeFileSync } from "fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const workSheetsFromFile = xlsx.parse(`${__dirname}/data.xls`);
-const COLUMNS = {REGION: 0, DISTRICT: 1};
+const COLUMNS = {REGION: 0, DISTRICT: 1, TARGET_POP: 3};
 const ignoredFirstColumns = 3;
 const ignoredFirstRows = 2;
 
@@ -29,18 +29,27 @@ function findIndicatorsRange(sheet) {
     return indicatorsRange;
 }
 
+function findDistrictIndicatorsValues(indicatorsRange, districtCells) {
+    return _.reduce(indicatorsRange, (indicatorsValue, range, indicator) => {
+        const indicatorRangeSum = _.sum(districtCells.slice(range.start, range.end));
+        indicatorsValue[indicator] = {
+            value: indicatorRangeSum,
+            coverageRate: Number((indicatorRangeSum / (districtCells[COLUMNS.TARGET_POP] / 12)).toFixed(2)), // 12 months
+        };
+        return indicatorsValue;
+    }, {});
+}
+
 function findDistricsValuesForRange(sheet, indicatorsRange) {
-    return _.reduce(sheet.data.slice(ignoredFirstRows), (result, districtCells, index) => {
+    return _.reduce(sheet.data.slice(ignoredFirstRows), (result, districtCells) => {
         if (isGhanaOrUndefinedDistrict(districtCells)) {
             return result;
         }
+
         result[districtCells[COLUMNS.DISTRICT]] = {
             region: districtCells[COLUMNS.REGION],
             district: districtCells[COLUMNS.DISTRICT],
-            ..._.reduce(indicatorsRange, (indicatorsValue, range, indicator) => {
-                indicatorsValue[indicator] = _.sum(districtCells.slice(range.start, range.end));
-                return indicatorsValue;
-            }, {}),
+            ...findDistrictIndicatorsValues(indicatorsRange, districtCells),
         };
         return result;
     }, {});
@@ -52,7 +61,7 @@ function findMonthlyDistricsValues() {
         const districtsValues = findDistricsValuesForRange(sheet, indicatorsRange);
         return {
             districtsValues,
-            year: `20${sheet.name.split('_')[1]}`,
+            year: Number(`20${sheet.name.split('_')[1]}`),
             month: (index % 12) + 1,
        };
     });
