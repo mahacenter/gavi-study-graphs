@@ -1,8 +1,10 @@
 import React from 'react'
 import * as d3 from 'd3'
+import {legend} from "./monthlyLegend";
 
 const cellSize = 17;
 const width = 954;
+const legendWidth = 320;
 const height = 119
 
 const colorResolver = years => {
@@ -16,14 +18,18 @@ const colorResolver = years => {
 
     const maxValue = Math.max(1.5, Math.max(max, -min));
     return {
-        min,
-        max,
+        legendBuilder: () => legend({
+            color: d3.scaleDiverging([-maxValue / 100, 0, maxValue / 100], d3.interpolatePiYG),
+            width: legendWidth,
+            title: "Monthly change",
+            tickFormat: "+%"
+        }),
         color: d3.scaleSequential(d3.interpolatePiYG).domain([-maxValue, maxValue])
     };
 };
 
 export function CalendarGraph(props) {
-    const {color} = colorResolver(props.years);
+    const {color, legendBuilder} = colorResolver(props.years);
 
     const svg = d3.create("svg")
         .attr("viewBox", [0, 0, width, (height + (props.selectedRegions.length * cellSize)) * props.years.length])
@@ -33,7 +39,7 @@ export function CalendarGraph(props) {
     const yearSvg = svg.selectAll("g")
         .data(props.years)
         .join("g")
-        .attr("transform", (d, i) => `translate(300,${(40 + (props.selectedRegions.length * cellSize)) * i + cellSize * 1.5})`);
+        .attr("transform", (d, i) => `translate(345,${(40 + (props.selectedRegions.length * cellSize)) * i + cellSize * 1.5})`);
 
     yearSvg.append("text")
         .attr("x", -5)
@@ -82,5 +88,8 @@ export function CalendarGraph(props) {
 
     const node = svg.node();
 
-    return <div dangerouslySetInnerHTML={{__html: node.outerHTML}}></div>;
+    return <>
+        <div style={{width: legendWidth, margin: '25px auto auto'}} dangerouslySetInnerHTML={{__html: legendBuilder().outerHTML}}></div>
+        <div dangerouslySetInnerHTML={{__html: node.outerHTML}}></div>
+    </>;
 }
