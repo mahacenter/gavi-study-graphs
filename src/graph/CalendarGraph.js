@@ -12,11 +12,13 @@ const colorResolver = years => {
             if (coverageRateDiff < min) min = coverageRateDiff;
             if (coverageRateDiff > max) max = coverageRateDiff;
         })
-    })
+    });
+
+    const maxValue = Math.max(1.5, Math.max(max, -min));
     return {
         min,
         max,
-        color: d3.scaleSequential(d3.interpolatePiYG).domain([-max, max])
+        color: d3.scaleSequential(d3.interpolatePiYG).domain([-maxValue, maxValue])
     };
 };
 
@@ -73,7 +75,10 @@ export function CalendarGraph(props) {
         })
         .attr("fill", cell => color(cell.coverageRateDiff))
         .append("title")
-        .text(cell => `${props.indicator}: ${cell.coverageRateDiff}`);
+        .text(cell => `${props.indicator} for ${cell.regionOrDistrict}: 
+- Coverage rate diff: ${cell.coverageRateDiff}
+- Target population: ${cell.targetPop}
+- Value: ${cell.value}`);
 
     const node = svg.node();
 

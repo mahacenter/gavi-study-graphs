@@ -4,53 +4,9 @@ import indicators from "./data/indicators.json";
 import regions from "./data/regions.json";
 import logo from './svg/Maha_blanc.svg';
 import {CalendarGraph} from "./graph/CalendarGraph";
-import {indicatorCoverageRateDiff, indicatorYearsValues} from "./data/mappers";
+import {districtsCoverageRateDiff, regionsCoverageRateDiff} from "./data/mappers";
 import './App.css';
 const { Option } = Select;
-//
-// const years = [
-//   {
-//     name: '2019',
-//     // Ahafo: [1304, 1411],
-//     // Ashanti: [2605, 1205],
-//     values: [{
-//       month: 1,
-//       regionOrDistrict: 'Ahafo',
-//       value: 1304,
-//     }, {
-//       month: 2,
-//       regionOrDistrict: 'Ahafo',
-//       value: 1411,
-//     }, {
-//       month: 1,
-//       regionOrDistrict: 'Ashanti',
-//       value: 2605,
-//     }, {
-//       month: 2,
-//       regionOrDistrict: 'Ashanti',
-//       value: 1205,
-//     }],
-//   }, {
-//     name: '2020',
-//     values: [{
-//       month: 1,
-//       regionOrDistrict: 'Ahafo',
-//       value: 2304,
-//     }, {
-//       month: 2,
-//       regionOrDistrict: 'Ahafo',
-//       value: 2411,
-//     }, {
-//       month: 1,
-//       regionOrDistrict: 'Ashanti',
-//       value: 3605,
-//     }, {
-//       month: 2,
-//       regionOrDistrict: 'Ashanti',
-//       value: 2205,
-//     }],
-//   },
-// ];
 
 function App() {
   const [selectedIndicator, setSelectedIndicator] = useState(indicators[0]);
@@ -62,7 +18,9 @@ function App() {
       <div className="App">
         <header className="App-header">
           <Space size="large">
-            <img src={logo} className="App-logo App-header--component" alt="logo" />
+            <a href="https://www.mahacenter.com/" target="_blank" rel="noreferrer">
+                <img src={logo} className="App-logo App-header--component" alt="logo" />
+            </a>
             <Select className="App-header--indicators App-header--component"
                     value={selectedIndicator}
                     onChange={setSelectedIndicator}>
@@ -90,10 +48,17 @@ function App() {
             }
           </Space>
         </header>
-        <CalendarGraph
-            indicator={selectedIndicator}
-            years={indicatorCoverageRateDiff(selectedIndicator, selectedDistricts)}
-            selectedRegions={selectedDistricts.sort()} />
+          {selectedRegion ?
+              <CalendarGraph
+                  indicator={selectedIndicator}
+                  years={districtsCoverageRateDiff(selectedIndicator, selectedDistricts)}
+                  selectedRegions={selectedDistricts.sort()}/>
+          :
+              <CalendarGraph
+                  indicator={selectedIndicator}
+                  years={regionsCoverageRateDiff(selectedIndicator, Object.keys(regions))}
+                  selectedRegions={Object.keys(regions).sort()}/>
+          }
       </div>
   );
 }

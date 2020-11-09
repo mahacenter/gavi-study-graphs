@@ -1,16 +1,17 @@
 import _ from "lodash";
-import monthlyDistricsValues from "./monthlyDistricsValues.json";
+import monthlyRegionsValues from "./monthlyRegionsValues.json";
+import monthlyDistrictsValues from "./monthlyDistrictsValues.json";
 
-function getMonthValues(selectedIndicator, selectedDistricts, monthData) {
+function getMonthValues(selectedIndicator, selectedOu, ouLabel, monthData) {
     return _.reduce(monthData.districtsValues, (yearValuesAcc, districtValues) => {
-        if (!selectedDistricts.includes(districtValues.district)) {
+        if (!selectedOu.includes(districtValues[ouLabel])) {
             return yearValuesAcc;
         }
         return [
             ...yearValuesAcc,
             {
                 month: monthData.month,
-                regionOrDistrict: districtValues.district,
+                regionOrDistrict: districtValues[ouLabel],
                 ...districtValues[selectedIndicator],
             }
         ];
@@ -18,7 +19,7 @@ function getMonthValues(selectedIndicator, selectedDistricts, monthData) {
 }
 
 export function indicatorYearsValues(selectedIndicator, selectedDistricts) {
-    return monthlyDistricsValues.reduce((acc, monthData) => {
+    return monthlyDistrictsValues.reduce((acc, monthData) => {
         const monthValues = getMonthValues(selectedIndicator, selectedDistricts, monthData);
         const accYear = acc.find(year => year.name === monthData.year);
         if (accYear) {
@@ -33,21 +34,27 @@ export function indicatorYearsValues(selectedIndicator, selectedDistricts) {
     }, []);
 }
 
+export function regionsCoverageRateDiff(selectedIndicator, selectedRegions) {
+    return coverageRateDiff(selectedIndicator, selectedRegions, 'region', monthlyRegionsValues);
+}
+
+export function districtsCoverageRateDiff(selectedIndicator, selectedDistricts) {
+    return coverageRateDiff(selectedIndicator, selectedDistricts, 'district', monthlyDistrictsValues);
+}
 /*
  * For performance reason we expect monthlyDistricsValues to be already ordered.
  */
-export function indicatorCoverageRateDiff(selectedIndicator, selectedDistricts) {
+function coverageRateDiff(selectedIndicator, selectedDistricts, ouLabel, allMonthlyData) {
     const allMonthsValueAccumulator = {};
     const findPreviousYearMonthValues = (monthData) => {
         const yearMinusOne = monthData.year - 1;
         const previousYear = allMonthsValueAccumulator[yearMinusOne];
-        const previousYearMonthValues = previousYear && previousYear[monthData.month];
-        return previousYearMonthValues;
+        return previousYear && previousYear[monthData.month];
     };
 
-    return monthlyDistricsValues.reduce((acc, monthData) => {
+    return allMonthlyData.reduce((acc, monthData) => {
         const previousYearMonthValues = findPreviousYearMonthValues(monthData);
-        const monthValues = getMonthValues(selectedIndicator, selectedDistricts, monthData);
+        const monthValues = getMonthValues(selectedIndicator, selectedDistricts, ouLabel, monthData);
         const monthValuesWithCoverageRateDiff = () => monthValues.map(monthValue => {
             const previousYearMonthDistrict = previousYearMonthValues.find(previousYearMonth => previousYearMonth.regionOrDistrict === monthValue.regionOrDistrict);
             return ({

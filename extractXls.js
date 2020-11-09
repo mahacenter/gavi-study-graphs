@@ -34,6 +34,7 @@ function findDistrictIndicatorsValues(indicatorsRange, districtCells) {
         const indicatorRangeSum = _.sum(districtCells.slice(range.start, range.end));
         indicatorsValue[indicator] = {
             value: indicatorRangeSum,
+            targetPop: Math.round(districtCells[COLUMNS.TARGET_POP]),
             coverageRate: Number((indicatorRangeSum / (districtCells[COLUMNS.TARGET_POP] / 12)).toFixed(2)), // 12 months
         };
         return indicatorsValue;
@@ -55,7 +56,7 @@ function findDistricsValuesForRange(sheet, indicatorsRange) {
     }, {});
 }
 
-function findMonthlyDistricsValues() {
+function findMonthlyDistrictsValues() {
     return workSheetsFromFile.map((sheet, index) => {
         const indicatorsRange = findIndicatorsRange(sheet);
         const districtsValues = findDistricsValuesForRange(sheet, indicatorsRange);
@@ -64,6 +65,59 @@ function findMonthlyDistricsValues() {
             year: Number(`20${sheet.name.split('_')[1]}`),
             month: (index % 12) + 1,
        };
+    });
+}
+
+function findRegionsValuesForRange(sheet, indicatorsRange) {
+    const joinedRegionValues = _.reduce(sheet.data.slice(ignoredFirstRows), (result, districtCells) => {
+        if (isGhanaOrUndefinedDistrict(districtCells)) {
+            return result;
+        }
+        if (!result[districtCells[COLUMNS.REGION]]) {
+            result[districtCells[COLUMNS.REGION]] = {};
+        }
+
+        const regionIndicatorsValues = findDistrictIndicatorsValues(indicatorsRange, districtCells);
+        Object.keys(regionIndicatorsValues).forEach(indicatorName => {
+            const regionIndicator = result[districtCells[COLUMNS.REGION]][indicatorName];
+            if (!regionIndicator) {
+                result[districtCells[COLUMNS.REGION]][indicatorName] = {
+                    values: [regionIndicatorsValues[indicatorName].value],
+                    targetPops: [regionIndicatorsValues[indicatorName].targetPop],
+                }
+            } else {
+                regionIndicator.values.push(regionIndicatorsValues[indicatorName].value);
+                regionIndicator.targetPops.push(regionIndicatorsValues[indicatorName].targetPop);
+            }
+        })
+
+        return result;
+    }, {});
+
+    return Object.keys(joinedRegionValues).map(region => ({
+        region,
+        ..._.mapValues(joinedRegionValues[region], oneRegionIndicator => {
+            const indicatorRangeSum = _.sum(oneRegionIndicator.values);
+            const indicatorTargetPopSum = _.sum(oneRegionIndicator.targetPops);
+            const coverageRate = Number((indicatorRangeSum / (indicatorTargetPopSum / 12)).toFixed(2)); // 12 months
+            return {
+                value: indicatorRangeSum,
+                targetPop: indicatorTargetPopSum,
+                coverageRate: coverageRate,
+            };
+        }),
+    }));
+}
+
+function findMonthlyRegionsValues() {
+    return workSheetsFromFile.map((sheet, index) => {
+        const indicatorsRange = findIndicatorsRange(sheet);
+        const districtsValues = findRegionsValuesForRange(sheet, indicatorsRange);
+        return {
+            districtsValues,
+            year: Number(`20${sheet.name.split('_')[1]}`),
+            month: (index % 12) + 1,
+        };
     });
 }
 
@@ -91,6 +145,7 @@ function findIndicators() {
 }
 
 
-writeFileSync(`${__dirname}/src/data/monthlyDistricsValues.json`, JSON.stringify(findMonthlyDistricsValues()));
+writeFileSync(`${__dirname}/src/data/monthlyDistrictsValues.json`, JSON.stringify(findMonthlyDistrictsValues()));
+writeFileSync(`${__dirname}/src/data/monthlyRegionsValues.json`, JSON.stringify(findMonthlyRegionsValues()));
 writeFileSync(`${__dirname}/src/data/regions.json`, JSON.stringify(findRegionsAndDistricts()));
 writeFileSync(`${__dirname}/src/data/indicators.json`, JSON.stringify(findIndicators()));
