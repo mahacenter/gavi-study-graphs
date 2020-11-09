@@ -35,7 +35,7 @@ function findDistrictIndicatorsValues(indicatorsRange, districtCells) {
         indicatorsValue[indicator] = {
             value: indicatorRangeSum,
             targetPop: Math.round(districtCells[COLUMNS.TARGET_POP]),
-            coverageRate: Number((indicatorRangeSum / (districtCells[COLUMNS.TARGET_POP] / 12)).toFixed(2)), // 12 months
+            coverageRate: Number((indicatorRangeSum / (districtCells[COLUMNS.TARGET_POP] / 12)).toPrecision(3)), // 12 months
         };
         return indicatorsValue;
     }, {});
