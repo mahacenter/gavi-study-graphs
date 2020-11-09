@@ -27,7 +27,6 @@ function App() {
               {indicators.map(indicator => <Option value={indicator} key={indicator}>{indicator}</Option>)}
             </Select>
             <Select className="App-header--regions App-header--component"
-                    allowClear={true}
                     placeholder="Select a region"
                     onChange={region => {
                       setSelectedDistricts([])
@@ -38,6 +37,7 @@ function App() {
             </Select>
             {regionDistricts &&
               <Select className="App-header--districts App-header--component"
+                      placeholder="Select districts"
                       mode="tags"
                       tokenSeparators={[',']}
                       maxTagCount={5}
