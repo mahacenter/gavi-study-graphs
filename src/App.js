@@ -1,11 +1,19 @@
-import { Select, Space } from "antd";
+import {Select, Space} from "antd";
 import {useState} from "react";
 import indicators from "./data/indicators.json";
 import regions from "./data/regions.json";
+import allMonths from "./data/months.json";
 import logo from './svg/Maha_blanc.svg';
 import {CalendarGraph} from "./graph/CalendarGraph";
-import {districtsCoverageRateDiff, regionsCoverageRateDiff} from "./data/mappers";
+import {
+  districtsCoverageRateDiff,
+  districtSumValues,
+  regionsCoverageRateDiff,
+  regionSumValues,
+} from "./data/mappers";
+import {MultiLineGraph} from "./graph/MultiLineGraph";
 import './App.css';
+
 const { Option } = Select;
 
 function App() {
@@ -49,15 +57,29 @@ function App() {
           </Space>
         </header>
           {selectedRegion ?
+            <>
               <CalendarGraph
-                  indicator={selectedIndicator}
-                  years={districtsCoverageRateDiff(selectedIndicator, selectedDistricts)}
-                  selectedRegions={selectedDistricts.sort()}/>
+                indicator={selectedIndicator}
+                years={districtsCoverageRateDiff(selectedIndicator, selectedDistricts)}
+                selectedRegions={selectedDistricts.sort()}/>
+              <MultiLineGraph
+                indicator={selectedIndicator}
+                dates={allMonths}
+                series={districtSumValues(selectedIndicator, selectedDistricts)}
+                selectedRegions={selectedDistricts.sort()}/>
+            </>
           :
+            <>
               <CalendarGraph
-                  indicator={selectedIndicator}
-                  years={regionsCoverageRateDiff(selectedIndicator, Object.keys(regions))}
-                  selectedRegions={Object.keys(regions).sort()}/>
+                indicator={selectedIndicator}
+                years={regionsCoverageRateDiff(selectedIndicator, Object.keys(regions))}
+                selectedRegions={Object.keys(regions).sort()}/>
+              <MultiLineGraph
+                indicator={selectedIndicator}
+                dates={allMonths}
+                series={regionSumValues(selectedIndicator, Object.keys(regions))}
+                selectedRegions={selectedDistricts.sort()}/>
+            </>
           }
       </div>
   );
