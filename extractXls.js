@@ -94,19 +94,23 @@ function findRegionsValuesForRange(sheet, indicatorsRange) {
         return result;
     }, {});
 
-    return Object.keys(joinedRegionValues).map(region => ({
+    return _.reduce(joinedRegionValues, (acc, regionValues, region) => ({
+      ...acc,
+      [region]: {
         region,
-        ..._.mapValues(joinedRegionValues[region], oneRegionIndicator => {
+        ...
+          _.mapValues(joinedRegionValues[region], oneRegionIndicator => {
             const indicatorRangeSum = _.sum(oneRegionIndicator.values);
             const indicatorTargetPopSum = _.sum(oneRegionIndicator.targetPops);
             const coverageRate = Number((indicatorRangeSum / (indicatorTargetPopSum / 12)).toFixed(2)); // 12 months
             return {
-                value: indicatorRangeSum,
-                targetPop: indicatorTargetPopSum,
-                coverageRate: coverageRate,
+              value: indicatorRangeSum,
+              targetPop: indicatorTargetPopSum,
+              coverageRate: coverageRate,
             };
-        }),
-    }));
+          }),
+      },
+    }), {});
 }
 
 function findMonthlyRegionsValues() {
@@ -144,8 +148,13 @@ function findIndicators() {
     return Object.keys(indicatorsRange);
 }
 
+function findMonths() {
+  return workSheetsFromFile.map((sheet, index) => `20${sheet.name.split('_')[1]}-${(index % 12) + 1}-01`);
+}
+
 
 writeFileSync(`${__dirname}/src/data/monthlyDistrictsValues.json`, JSON.stringify(findMonthlyDistrictsValues()));
 writeFileSync(`${__dirname}/src/data/monthlyRegionsValues.json`, JSON.stringify(findMonthlyRegionsValues()));
 writeFileSync(`${__dirname}/src/data/regions.json`, JSON.stringify(findRegionsAndDistricts()));
 writeFileSync(`${__dirname}/src/data/indicators.json`, JSON.stringify(findIndicators()));
+writeFileSync(`${__dirname}/src/data/months.json`, JSON.stringify(findMonths()));
