@@ -5,7 +5,6 @@ import {legend} from "./monthlyLegend";
 const cellSize = 17;
 const width = 954;
 const legendWidth = 320;
-const height = 119
 
 const colorResolver = years => {
     let min = 0, max = 0;
@@ -16,7 +15,8 @@ const colorResolver = years => {
         })
     });
 
-    const maxValue = Math.max(1.5, Math.max(max, -min));
+    // const maxValue = Math.max(1.5, Math.max(max, -min));
+    const maxValue = 3;
     return {
         legendBuilder: () => legend({
             color: d3.scaleDiverging([-maxValue / 100, 0, maxValue / 100], d3.interpolatePiYG),
@@ -24,16 +24,18 @@ const colorResolver = years => {
             title: "Monthly change",
             tickFormat: "+%"
         }),
-        color: d3.scaleSequential(d3.interpolatePiYG).domain([-maxValue, maxValue])
+        color: d3.scaleSequential(d3.interpolatePiYG).domain([-maxValue, maxValue]),
     };
 };
 
 export function CalendarGraph(props) {
-    const {color, legendBuilder} = colorResolver(props.years);
-
     useEffect(() => {
+        const {color, legendBuilder} = colorResolver(props.years);
+
+        d3.select("#calendar-legend").selectAll("*").remove();
         d3.select("#calendar-legend").append(() => legendBuilder());
 
+        d3.select("#calendar-graph").selectAll("*").remove();
         const svg = d3.select("#calendar-graph")
             .attr("viewBox", [0, 0, width, (40 + (props.selectedRegions.length * cellSize)) * props.years.length])
             .attr("font-family", "sans-serif")
@@ -88,7 +90,7 @@ export function CalendarGraph(props) {
 - Coverage rate diff: ${cell.coverageRateDiff}
 - Target population: ${cell.targetPop}
 - Value: ${cell.value}`);
-    }, []);
+    }, [props.indicator, props.selectedRegions, props.years]);
 
     return <>
         <div id="calendar-legend" style={{width: legendWidth, margin: '25px auto auto'}}></div>
