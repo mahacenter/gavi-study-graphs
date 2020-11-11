@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "./static/css/main.a1aa6807.chunk.css",
+    "main.js": "./static/js/main.357ff157.chunk.js",
+    "main.js.map": "./static/js/main.357ff157.chunk.js.map",
+    "runtime-main.js": "./static/js/runtime-main.27f4b10a.js",
+    "runtime-main.js.map": "./static/js/runtime-main.27f4b10a.js.map",
+    "static/css/2.617c3bb8.chunk.css": "./static/css/2.617c3bb8.chunk.css",
+    "static/js/2.e03ba982.chunk.js": "./static/js/2.e03ba982.chunk.js",
+    "static/js/2.e03ba982.chunk.js.map": "./static/js/2.e03ba982.chunk.js.map",
+    "static/js/3.7b11cbf0.chunk.js": "./static/js/3.7b11cbf0.chunk.js",
+    "static/js/3.7b11cbf0.chunk.js.map": "./static/js/3.7b11cbf0.chunk.js.map",
+    "index.html": "./index.html",
+    "static/css/2.617c3bb8.chunk.css.map": "./static/css/2.617c3bb8.chunk.css.map",
+    "static/css/main.a1aa6807.chunk.css.map": "./static/css/main.a1aa6807.chunk.css.map",
+    "static/js/2.e03ba982.chunk.js.LICENSE.txt": "./static/js/2.e03ba982.chunk.js.LICENSE.txt",
+    "static/media/Maha_blanc.8821f1d2.svg": "./static/media/Maha_blanc.8821f1d2.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.27f4b10a.js",
+    "static/css/2.617c3bb8.chunk.css",
+    "static/js/2.e03ba982.chunk.js",
+    "static/css/main.a1aa6807.chunk.css",
+    "static/js/main.357ff157.chunk.js"
+  ]
+}
