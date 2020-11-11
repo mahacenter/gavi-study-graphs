@@ -37,7 +37,7 @@ function App() {
             <Select className="App-header--regions App-header--component"
                     placeholder="Select a region"
                     onChange={region => {
-                      setSelectedDistricts([])
+                      setSelectedDistricts(regions[region]);
                       setSelectedRegion(region);
                     }}>
               <Option value={null} key={"none"}></Option>
