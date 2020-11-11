@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 
 const margin = ({top: 20, right: 20, bottom: 30, left: 30});
 const height = 500;
-const width = 1000;
+const width = 800;
 
 export function MultiLineGraph(props) {
   useEffect(() => {

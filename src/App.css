@@ -1,5 +1,4 @@
 .App {
-  text-align: center;
 }
 
 .App-logo {
@@ -34,4 +33,13 @@
 
 .App-link {
   color: #61dafb;
+}
+
+#calendar-graph {
+  margin-left: 10px;
+  width: 1950px;
+}
+
+#multiline-graph {
+  margin-left: 270px;
 }
